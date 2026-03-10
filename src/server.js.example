@@ -1,0 +1,89 @@
+const express = require('express');
+const cors = require('cors');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const dotenv = require('dotenv');
+const userRoutes = require('./domains/user/routes/user.routes');
+const authRoutes = require('./domains/auth/routes/auth.routes');
+const auditRoutes = require('./domains/audit/routes/audit.routes');
+const departmentEventRoutes = require('./domains/media/routes/department-event.routes');
+
+// Carregar variáveis de ambiente
+dotenv.config();
+
+const app = express();
+const PORT = process.env.PORT || 3001;
+
+// Middlewares de segurança
+app.use(helmet());
+app.use(cors({
+  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  credentials: true,
+}));
+
+// Rate limiting
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: 100, // limite de 100 requisições por IP
+  message: 'Muitas requisições deste IP, tente novamente mais tarde.',
+});
+app.use('/api/', limiter);
+
+// Middlewares de parsing
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Rotas de exemplo
+app.get('/', (req, res) => {
+  res.json({
+    message: 'API Assembleia de Deus Lagoa Nova',
+    version: '1.0.0',
+    status: 'online',
+  });
+});
+
+// Rotas da API (a serem implementadas)
+app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/audit', auditRoutes);
+app.use('/api', departmentEventRoutes);
+// app.use('/api/departamentos', departamentosRoutes);
+// app.use('/api/pedidos-oracao', pedidosOracaoRoutes);
+// app.use('/api/aniversariantes', aniversariantesRoutes);
+// app.use('/api/eventos', eventosRoutes);
+// app.use('/api/galeria', galeriaRoutes);
+
+// Rota de health check
+app.get('/health', (req, res) => {
+  res.json({
+    status: 'OK',
+    timestamp: new Date().toISOString(),
+  });
+});
+
+// Middleware de erro 404
+app.use((req, res) => {
+  res.status(404).json({
+    error: 'Rota não encontrada',
+    path: req.path,
+  });
+});
+
+// Middleware de tratamento de erros
+app.use((err, req, res, next) => {
+  console.error('Erro:', err);
+  
+  res.status(err.status || 500).json({
+    error: err.message || 'Erro interno do servidor',
+    ...(process.env.NODE_ENV === 'development' && { stack: err.stack }),
+  });
+});
+
+// Iniciar servidor
+app.listen(PORT, () => {
+  console.log(`🚀 Servidor rodando na porta ${PORT}`);
+  console.log(`📍 http://localhost:${PORT}`);
+  console.log(`🌍 Ambiente: ${process.env.NODE_ENV || 'development'}`);
+});
+
+module.exports = app;
