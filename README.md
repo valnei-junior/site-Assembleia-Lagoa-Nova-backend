@@ -8,6 +8,8 @@ API Node.js/Express com autenticação JWT, controle de acesso por perfil, depar
 - Sequelize
 - PostgreSQL
 - Multer
+- Sharp
+- FFmpeg (fluent-ffmpeg + ffmpeg-static)
 - JWT
 
 ## Estrutura
@@ -53,8 +55,19 @@ API Node.js/Express com autenticação JWT, controle de acesso por perfil, depar
 - GET /api/v1/departments/:departmentId/events
 - POST /api/v1/departments/:departmentId/events/:eventId/videos
 - POST /api/v1/uploads/video
-- GET /uploads/:filename
+- POST /api/v1/media/upload
+- GET /api/video/:name
+- GET /api/v1/video/:name
+- GET /video/:name
+- GET /api/v1/media/video/:name
+- GET /api/v1/media/image/:name
+- GET /api/v1/media/thumbnail/:name
+- GET /uploads/videos/:filename
+- GET /uploads/images/:filename
 
 ## Observações
-- Upload de vídeo configurado para até 50MB por arquivo.
-- CORS liberado para FRONTEND_URL.
+- Upload de vídeo configurado para até 80MB por arquivo.
+- CORS em desenvolvimento aceita localhost/127.0.0.1 com porta dinâmica.
+- Streaming de vídeo usa Range Requests (206 Partial Content).
+- Imagens são otimizadas automaticamente com Sharp.
+- Vídeos podem gerar thumbnail automaticamente com FFmpeg.
